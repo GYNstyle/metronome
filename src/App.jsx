@@ -7,11 +7,22 @@ const timeSignatures = [
 ]
 
 export default function App() {
-  const [bpm, setBpm] = useState(180)
+  const [bpmInput, setBpmInput] = useState('180')
   const [isRunning, setIsRunning] = useState(false)
   const [currentBeat, setCurrentBeat] = useState(0)
   const [signature, setSignature] = useState(timeSignatures[0])
   const audioCtxRef = useRef(null)
+
+  const parsedBpm = useMemo(() => Number.parseInt(bpmInput, 10), [bpmInput])
+  const effectiveBpm = useMemo(() => {
+    if (!Number.isFinite(parsedBpm) || parsedBpm === 0) return 1
+    return Math.abs(parsedBpm)
+  }, [parsedBpm])
+  const displayBpm = useMemo(() => (Number.isFinite(parsedBpm) ? parsedBpm : '--'), [parsedBpm])
+  const sliderBpm = useMemo(() => {
+    if (!Number.isFinite(parsedBpm)) return 180
+    return Math.min(240, Math.max(40, parsedBpm))
+  }, [parsedBpm])
 
   const ensureAudioContext = useCallback(() => {
     if (!audioCtxRef.current) {
@@ -55,7 +66,7 @@ export default function App() {
       return
     }
 
-    const intervalMs = 60000 / bpm
+    const intervalMs = 60000 / effectiveBpm
     let beat = 0
 
     const tick = () => {
@@ -68,7 +79,7 @@ export default function App() {
     const id = setInterval(tick, intervalMs)
 
     return () => clearInterval(id)
-  }, [bpm, isRunning, playClick, signature])
+  }, [effectiveBpm, isRunning, playClick, signature])
 
   useEffect(() => {
     return () => {
@@ -77,12 +88,6 @@ export default function App() {
       }
     }
   }, [])
-
-  const handleBpmChange = (value) => {
-    if (Number.isNaN(Number(value))) return
-    const clamped = Math.min(240, Math.max(40, Number(value)))
-    setBpm(clamped)
-  }
 
   const signatureOptions = useMemo(
     () =>
@@ -97,15 +102,7 @@ export default function App() {
   return (
     <div className="mx-auto min-h-screen max-w-6xl px-4 py-12">
       <header className="mb-8 flex items-start justify-between gap-4">
-        <div>
-          <p className="label mb-2">Tempo toolkit</p>
-          <h1 className="text-4xl font-semibold tracking-tight text-slate-900">
-            Minimal Metronome
-          </h1>
-          <p className="mt-3 max-w-2xl text-slate-600">
-            Set your BPM, pick a time signature, and track each beat with clear sound and a focused visual pulse.
-          </p>
-        </div>
+        <h1 className="text-4xl font-semibold tracking-tight text-slate-900">Minimal Metronome</h1>
         <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.15em] text-slate-500 shadow-sm">
           Light mode
         </span>
@@ -132,26 +129,24 @@ export default function App() {
                 <input
                   className="input w-28 text-center text-lg font-semibold"
                   type="number"
+                  step={1}
+                  value={bpmInput}
+                  onChange={(e) => setBpmInput(e.target.value)}
+                />
+              </div>
+              <div className="flex-1">
+                <input
+                  type="range"
                   min={40}
                   max={240}
                   step={1}
-                  value={bpm}
-                  onChange={(e) => handleBpmChange(e.target.value)}
+                  value={sliderBpm}
+                  onChange={(e) => setBpmInput(e.target.value)}
+                  className="w-full accent-indigo-500"
                 />
-                <div className="flex-1">
-                  <input
-                    type="range"
-                    min={40}
-                    max={240}
-                    step={1}
-                    value={bpm}
-                    onChange={(e) => handleBpmChange(e.target.value)}
-                    className="w-full accent-indigo-500"
-                  />
-                  <div className="mt-1 flex justify-between text-xs text-slate-500">
-                    <span>Slow</span>
-                    <span>Fast</span>
-                  </div>
+                <div className="mt-1 flex justify-between text-xs text-slate-500">
+                  <span>Slow</span>
+                  <span>Fast</span>
                 </div>
               </div>
             </div>
@@ -185,7 +180,7 @@ export default function App() {
               {isRunning ? 'Stop' : 'Start'}
             </button>
             <div className="rounded-full bg-white/70 px-4 py-2 text-sm font-medium text-slate-700 shadow-inner">
-              {bpm} BPM · {signature.label}
+              {displayBpm} BPM · {signature.label}
             </div>
           </div>
         </section>
@@ -201,7 +196,7 @@ export default function App() {
                   className={`pulse-ring absolute inset-0 rounded-full bg-indigo-200/50 ${
                     isRunning ? 'opacity-100' : 'opacity-0'
                   }`}
-                  style={{ animationDuration: `${60000 / bpm}ms` }}
+                  style={{ animationDuration: `${60000 / effectiveBpm}ms` }}
                 ></div>
                 <div className="relative flex h-44 w-44 flex-col items-center justify-center rounded-full bg-white/90 shadow-xl ring-1 ring-slate-200">
                   <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Beat</span>
@@ -209,7 +204,7 @@ export default function App() {
                     <span className="text-6xl font-semibold text-slate-900">{currentBeat || '–'}</span>
                     <span className="text-sm text-slate-400">/ {signature.beatsPerMeasure}</span>
                   </div>
-                  <div className="mt-3 text-sm text-slate-500">{bpm} BPM</div>
+                  <div className="mt-3 text-sm text-slate-500">{displayBpm} BPM</div>
                 </div>
               </div>
 
