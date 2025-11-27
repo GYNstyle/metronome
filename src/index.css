@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color: #0f172a;
+  background-color: transparent;
+  font-family: 'Space Grotesk', ui-sans-serif, system-ui, -apple-system;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+.card-surface {
+  @apply bg-white/80 backdrop-blur-lg border border-slate-200 shadow-card rounded-3xl;
+}
+
+.btn {
+  @apply inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-semibold transition-all duration-200;
+}
+
+.btn-primary {
+  @apply bg-indigo-500 text-white shadow-lg shadow-indigo-200 hover:bg-indigo-600 active:scale-[0.99];
+}
+
+.btn-ghost {
+  @apply bg-white/70 border border-slate-200 text-slate-700 hover:bg-white;
+}
+
+.input {
+  @apply w-full rounded-2xl border border-slate-200 bg-white/70 px-4 py-3 text-slate-800 shadow-inner outline-none transition focus:ring-2 focus:ring-indigo-100;
+}
+
+.label {
+  @apply text-xs font-semibold uppercase tracking-[0.1em] text-slate-500;
+}
+
+.meter-dot {
+  @apply h-3 w-3 rounded-full bg-slate-300 transition-all duration-150;
+}
+
+.meter-dot.active {
+  @apply scale-125 bg-indigo-500 shadow-[0_0_0_6px_rgba(99,102,241,0.15)];
+}
+
+@keyframes pulseRing {
+  0% {
+    transform: scale(0.92);
+    opacity: 0.8;
+  }
+  70% {
+    transform: scale(1.05);
+    opacity: 0.2;
+  }
+  100% {
+    transform: scale(1.1);
+    opacity: 0;
+  }
+}
+
+.pulse-ring {
+  animation: pulseRing 1200ms ease-out infinite;
+}
+
+.control-surface {
+  background: radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.08), transparent 30%),
+    radial-gradient(circle at 80% 10%, rgba(16, 185, 129, 0.06), transparent 25%),
+    radial-gradient(circle at 50% 80%, rgba(59, 130, 246, 0.08), transparent 35%);
+}
